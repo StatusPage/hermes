@@ -1,26 +1,16 @@
-module Angelia
-  class Deliverer
-
-    attr_accessor :settings
-
-    def initialize(settings)
-      self.settings = settings
+module Hermes
+  class MailgunProvider < Provider
+    def send_message(rails_message)
+      RestClient.post mailgun_url, options
     end
 
-    def domain
-      self.settings[:domain]
+    def mailgun_url
+      api_url + "/messages"
     end
 
-    def api_key
-      self.settings[:api_key]
+    def api_url
+      "https://api:#{api_key}@api.mailgun.net/v2/#{domain}"
     end
-
-    def deliver!(rails_message)
-      domain_override = rails_message['X-Domain-Override']
-      mailgun_client(domain_override).send_message build_mailgun_message_for(rails_message)
-    end
-
-    private
 
     def build_mailgun_message_for(rails_message)
       mailgun_message = build_basic_mailgun_message_for rails_message
@@ -109,5 +99,3 @@ module Angelia
     end
   end
 end
-
-ActionMailer::Base.add_delivery_method :angelia, Angelia::Deliverer
