@@ -8,7 +8,7 @@ module Hermes
     def initialize(settings)
       @providers = {}
 
-      [:email, :sms, :webhook].each do |provider_type|
+      [:email, :sms, :webhook, :tweet].each do |provider_type|
         @providers[provider_type] ||= []
         providers = settings[provider_type]
         next unless providers.try(:any?)
@@ -26,7 +26,10 @@ module Hermes
 
         # make sure the provider type has an aggregate weight of more than 1
         aweight = aggregate_weight_for_type(provider_type)
-        raise(InvalidWeightException, "Provider type:#{provider_type} has aggregate weight:#{aweight}") unless aweight > 0
+        unless aweight > 0
+          puts settings
+          raise(InvalidWeightException, "Provider type:#{provider_type} has aggregate weight:#{aweight}")
+        end
       end
     end
 
@@ -62,6 +65,7 @@ module Hermes
     end
 
     def delivery_type_for(rails_message)
+      byebug
       if rails_message.to.first.start_with?('@')
         :tweet
       elsif rails_message.to.first.include?('@')
@@ -74,7 +78,6 @@ module Hermes
     end
 
     def deliver!(rails_message)
-      byebug
       provider = weighted_provider_for_type(delivery_type_for(rails_message))
       provider.send_message(rails_message)
     end

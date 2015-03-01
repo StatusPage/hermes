@@ -1,5 +1,5 @@
 module Hermes
-  class TwilioProvider < SmsProvider
+  class TwilioProvider < Provider
     def send_message(rails_message)
       payload = payload(rails_message)
       self.client.account.messages.create(payload)
