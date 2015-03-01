@@ -1,60 +1,60 @@
 module Hermes
   class MailgunProvider < Provider
     def send_message(rails_message)
-      RestClient.post mailgun_url, options
+      HTTParty.post mailgun_url(rails_message), payload(rails_message)
     end
 
-    def mailgun_url
-      api_url + "/messages"
+    def mailgun_url(rails_message)
+      "https://api:#{self.credentials[:api_key]}@api.mailgun.net/v2/#{rails_message.mailgun_domain || self.defaults[:domain]}/messages"
     end
 
-    def api_url
-      "https://api:#{api_key}@api.mailgun.net/v2/#{domain}"
-    end
-
-    def build_mailgun_message_for(rails_message)
-      mailgun_message = build_basic_mailgun_message_for rails_message
-      transform_mailgun_attributes_from_rails rails_message, mailgun_message
-      remove_empty_values mailgun_message
-
-      mailgun_message
-    end
-
-    def transform_mailgun_attributes_from_rails(rails_message, mailgun_message)
-      transform_email_headers rails_message, mailgun_message
-      transform_mailgun_variables rails_message, mailgun_message
-      transform_mailgun_recipient_variables rails_message, mailgun_message
-      transform_custom_headers rails_message, mailgun_message
-    end
-
-    def build_basic_mailgun_message_for(rails_message)
-      mailgun_message = {
-        :from => rails_message[:from].formatted, 
-        :to => rails_message[:to].formatted, 
-        :subject => rails_message.subject,
-        :html => extract_html(rails_message), 
-        :text => extract_text(rails_message),
-        :attachment => []
+    def payload(rails_message)
+      # all of the basics required for an email
+      payload = {
+        from: rails_message[:from].formatted, 
+        to: rails_message[:to].formatted, 
+        subject: rails_message.subject,
+        html: extract_html(rails_message), 
+        text: extract_text(rails_message),
       }
 
-      # RestClient requires attachments to be in file format, use a temp directory and the decoded attachment
-      rails_message.attachments.each do |attachment|
-        # file needs its original name
-        fname = "#{Dir.tmpdir}/#{attachment.filename}"
+      # specific mailgun overrides
+      payload['h:Reply-To'] = rails_message.reply_to.formatted.first if rails_message.reply_to
+      payload['h:Message-ID'] = rails_message.message_id if rails_message.message_id
 
-        # write the file to temp
-        File.open(fname, 'wb') {|f| f.write(attachment.decoded)}
-
-        # then add as a file object
-        mailgun_message[:attachment] << File.new(fname)
+      # mailgun variables for replacement
+      rails_message.mailgun_variables.try(:each) do |name, value|
+        payload["v:#{name}"] = value
       end
 
-      return mailgun_message
-    end
+      # specific recipient variable replacement
+      payload['recipient-variables'] = rails_message.mailgun_recipient_variables.to_json if rails_message.mailgun_recipient_variables
 
-    def transform_email_headers(rails_message, mailgun_message)
-      mailgun_message['h:Reply-To'] = rails_message.reply_to.first if rails_message.reply_to
-      mailgun_message['h:Message-ID'] = rails_message.message_id if rails_message.message_id
+      # any other custom headers
+      rails_message.mailgun_headers.try(:each) do |name, value|
+        payload["h:#{name}"] = value
+      end
+
+      # and mailgun specific options
+      rails_message.mailgun_options.try(:each) do |name, value|
+        payload["o:#{name}"] = value
+      end
+
+      # any attachments?
+      payload[:attachment] = []
+      payload[:inline] = []
+      rails_message.attachments.try(:each) do |attachment|
+        if attachment.inline?
+          payload[:inline] << MailgunAttachment.new(attachment, encoding: 'ascii-8bit', inline: true)
+        else
+          payload[:attachment] << MailgunAttachment.new(attachment, encoding: 'ascii-8bit')
+        end
+      end
+
+      # remove anything that is empty
+      payload.delete_if { |key, value| value.nil? }
+
+      return payload
     end
 
     # @see http://stackoverflow.com/questions/4868205/rails-mail-getting-the-body-as-plain-text
@@ -72,30 +72,6 @@ module Hermes
       else
         rails_message.content_type =~ /text\/plain/ ? rails_message.body.decoded : nil
       end
-    end
-
-    def transform_mailgun_variables(rails_message, mailgun_message)
-      rails_message.mailgun_variables.try(:each) do |name, value|
-        mailgun_message["v:#{name}"] = value
-      end
-    end
-
-    def transform_custom_headers(rails_message, mailgun_message)
-      rails_message.mailgun_headers.try(:each) do |name, value|
-        mailgun_message["h:#{name}"] = value
-      end
-    end
-
-    def transform_mailgun_recipient_variables(rails_message, mailgun_message)
-      mailgun_message['recipient-variables'] = rails_message.mailgun_recipient_variables.to_json if rails_message.mailgun_recipient_variables
-    end
-
-    def remove_empty_values(mailgun_message)
-      mailgun_message.delete_if { |key, value| value.nil? }
-    end
-
-    def mailgun_client(domain_override = nil)
-      @maingun_client ||= Client.new(api_key, domain_override || domain)
     end
   end
 end

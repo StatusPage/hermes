@@ -62,7 +62,9 @@ module Hermes
     end
 
     def delivery_type_for(rails_message)
-      if rails_message.to.first.include?('@')
+      if rails_message.to.first.start_with?('@')
+        :tweet
+      elsif rails_message.to.first.include?('@')
         :email
       elsif rails_message.to.first.include?('://')
         :webhook
@@ -72,6 +74,7 @@ module Hermes
     end
 
     def deliver!(rails_message)
+      byebug
       provider = weighted_provider_for_type(delivery_type_for(rails_message))
       provider.send_message(rails_message)
     end

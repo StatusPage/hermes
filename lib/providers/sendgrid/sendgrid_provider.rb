@@ -1,15 +1,14 @@
 module Hermes
-  class SendgridProvider < Provider
+  class SendGridProvider < Provider
     def send_message(rails_message)
       RestClient.post mailgun_url, options
     end
 
-    def mailgun_url
-      api_url + "/messages"
-    end
-
-    def api_url
-      "https://api:#{api_key}@api.mailgun.net/v2/#{domain}"
+    def client
+      SendGrid::Client.new({
+        api_user: self.credentials[:api_user], 
+        api_key: self.credentials[:api_key]
+      })
     end
   end
 end

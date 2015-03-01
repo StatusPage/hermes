@@ -1,15 +1,20 @@
 module Hermes
   class PlivoProvider < Provider
     def send_message(rails_message)
-      RestClient.post mailgun_url, options
+      self.client.send_message(payload(rails_message))
     end
 
-    def mailgun_url
-      api_url + "/messages"
+    def payload(rails_message)
+      {
+        src: rails_message[:from].formatted,
+        dst: rails_message[:to].formatted,
+        text: rails_message.body.decoded.strip,
+        type: :sms,
+      }
     end
 
-    def api_url
-      "https://api:#{api_key}@api.mailgun.net/v2/#{domain}"
+    def client
+      Plivo::RestAPI.new(self.credentials[:auth_id], self.credentials[:auth_token])
     end
   end
 end
