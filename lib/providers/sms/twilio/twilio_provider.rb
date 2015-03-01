@@ -1,5 +1,5 @@
 module Hermes
-  class TwilioProvider < Provider
+  class TwilioProvider < SmsProvider
     def send_message(rails_message)
       payload = payload(rails_message)
       self.client.account.messages.create(payload)
@@ -9,7 +9,7 @@ module Hermes
       {
         to: rails_message[:to],
         from: rails_message[:from],
-        body: rails_message.body.decoded.strip,
+        body: extract_text(rails_message),
         status_callback: rails_message.twilio_status_callback
       }
     end

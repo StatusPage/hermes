@@ -1,5 +1,5 @@
 module Hermes
-  class MailgunProvider < Provider
+  class MailgunProvider < EmailProvider
     def send_message(rails_message)
       HTTParty.post mailgun_url(rails_message), payload(rails_message)
     end
@@ -12,7 +12,7 @@ module Hermes
       # all of the basics required for an email
       payload = {
         from: rails_message[:from].formatted, 
-        to: rails_message[:to].formatted, 
+        to: rails_message[:to].formatted,
         subject: rails_message.subject,
         html: extract_html(rails_message), 
         text: extract_text(rails_message),
@@ -55,23 +55,6 @@ module Hermes
       payload.delete_if { |key, value| value.nil? }
 
       return payload
-    end
-
-    # @see http://stackoverflow.com/questions/4868205/rails-mail-getting-the-body-as-plain-text
-    def extract_html(rails_message)
-      if rails_message.html_part
-        rails_message.html_part.body.decoded
-      else
-        rails_message.content_type =~ /text\/html/ ? rails_message.body.decoded : nil
-      end
-    end
-
-    def extract_text(rails_message)
-      if rails_message.multipart?
-        rails_message.text_part ? rails_message.text_part.body.decoded : nil
-      else
-        rails_message.content_type =~ /text\/plain/ ? rails_message.body.decoded : nil
-      end
     end
   end
 end

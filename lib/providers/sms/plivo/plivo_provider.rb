@@ -1,5 +1,5 @@
 module Hermes
-  class PlivoProvider < Provider
+  class PlivoProvider < SmsProvider
     def send_message(rails_message)
       self.client.send_message(payload(rails_message))
     end
