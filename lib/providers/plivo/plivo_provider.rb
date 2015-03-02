@@ -1,5 +1,7 @@
 module Hermes
   class PlivoProvider < Provider
+    required_credentials :auth_id, :auth_token
+    
     def send_message(rails_message)
       result = self.client.send_message(payload(rails_message))
       rails_message[:message_id] = result["api_id"]

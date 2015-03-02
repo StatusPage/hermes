@@ -1,5 +1,7 @@
 module Hermes
   class SendgridProvider < Provider
+    required_credentials :api_user, :api_key
+    
     def send_message(rails_message)
       result = client.send(sendgrid_message(rails_message))
       byebug

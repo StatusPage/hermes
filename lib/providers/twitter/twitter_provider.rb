@@ -1,6 +1,9 @@
 module Hermes
   class TwitterProvider < Provider
+    required_credentials :consumer_key, :consumer_secret
+    
     def send_message(rails_message)
+      byebug
       client.update(rails_message.body.decoded.strip)
     end
 

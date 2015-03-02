@@ -17,7 +17,7 @@ module Hermes
         providers.each do |provider_name, options|
           # check to see that the provider class exists
           provider_proper_name = "#{provider_name}_provider".camelize.to_sym
-          raise(ProviderNotFoundException, "Could not find provider class Hermes::#{provider_proper_name}") unless Hermes.constants.include?(provider_proper_name)
+          raise(ProviderNotFoundError, "Could not find provider class Hermes::#{provider_proper_name}") unless Hermes.constants.include?(provider_proper_name)
 
           # initialize the provider with the given weight, defaults, and credentials
           provider = Hermes.const_get(provider_proper_name).new(options)
@@ -28,7 +28,7 @@ module Hermes
         aweight = aggregate_weight_for_type(provider_type)
         unless aweight > 0
           puts settings
-          raise(InvalidWeightException, "Provider type:#{provider_type} has aggregate weight:#{aweight}")
+          raise(InvalidWeightError, "Provider type:#{provider_type} has aggregate weight:#{aweight}")
         end
       end
     end

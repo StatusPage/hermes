@@ -1,5 +1,7 @@
 module Hermes
   class TwilioProvider < Provider
+    required_credentials :account_sid, :auth_token
+
     def send_message(rails_message)
       payload = payload(rails_message)
       result = self.client.account.messages.create(payload)
@@ -9,16 +11,19 @@ module Hermes
     end
 
     def payload(rails_message)
-      {
-        to: rails_message[:to],
-        from: rails_message[:from],
+      payload = {
+        to: rails_message.to.first,
+        from: rails_message.from.first,
         body: extract_text(rails_message),
-        status_callback: rails_message.twilio_status_callback
       }
+
+      payload[:status_callback] = rails_message.twilio_status_callback if rails_message.twilio_status_callback
+
+      return payload
     end
 
     def client
-      Twilio::REST::Client.new(self.credentials[:account_sid], self.credentials[:account_token])
+      Twilio::REST::Client.new(self.credentials[:account_sid], self.credentials[:auth_token])
     end
   end
 end

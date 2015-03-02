@@ -1,5 +1,7 @@
 module Hermes
   class MailgunProvider < Provider
+    required_credentials :api_key
+
     def send_message(rails_message)
       domain = rails_message.mailgun_domain || self.defaults[:domain]
       message = self.mailgun_message(rails_message)
