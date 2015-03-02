@@ -22,7 +22,7 @@ module Hermes
 
       # and any attachments
       rails_message.attachments.try(:each) do |attachment|
-        message.add_attachment(attachment, attachment.filename)
+        message.add_attachment(Hermes::EmailAttachment.new(attachment))
       end
 
       return message

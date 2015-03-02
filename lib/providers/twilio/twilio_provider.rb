@@ -2,7 +2,10 @@ module Hermes
   class TwilioProvider < Provider
     def send_message(rails_message)
       payload = payload(rails_message)
-      self.client.account.messages.create(payload)
+      result = self.client.account.messages.create(payload)
+
+      # set the sid onto the rails message as the message id, used for tracking
+      rails_message[:message_id] = result.sid
     end
 
     def payload(rails_message)
