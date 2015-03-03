@@ -52,12 +52,10 @@ module Hermes
     # and then Base64ed since Mail::Message really only wants
     # to play with strings for these fields
     def complex_extract(address_container)
-      decoded_value = YAML.load(Base64.decode64(address_container)) rescue false
-
-      if decoded_value
+      if B64Y.decodable?(address_container)
         {
           decoded: true,
-          value: decoded_value
+          value: B64Y.decode(address_container)
         }
       else
         {

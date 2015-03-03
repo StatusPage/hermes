@@ -3,16 +3,17 @@ module Hermes
     required_credentials :consumer_key, :consumer_secret
     
     def send_message(rails_message)
-      byebug
-      client.update(rails_message.body.decoded.strip)
+      self.client(rails_message).update(extract_text(rails_message))
     end
 
     def client(rails_message)
+      to = extract_to(rails_message)
+
       Twitter::Client.new(
         consumer_key: self.credentials[:consumer_key],
         consumer_secret: self.credentials[:consumer_secret],
-        oauth_token: rails_message.twitter_oauth_token || self.credentails[:twitter_oauth_token],
-        oauth_token_secret: rails_message.twitter_oauth_token_secret || self.credentails[:twitter_oauth_token_secret]
+        oauth_token: to[:twitter_oauth_token],
+        oauth_token_secret: to[:twitter_oauth_token_secret]
       )
     end
   end

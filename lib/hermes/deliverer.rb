@@ -4,10 +4,12 @@ module Hermes
   class Deliverer
     include Extractors
 
+    cattr_accessor :test
     attr_accessor :providers
 
     def initialize(settings)
       @providers = {}
+      self.class.test = !!settings[:test]
 
       [:email, :sms, :webhook, :tweet].each do |provider_type|
         @providers[provider_type] ||= []
@@ -68,8 +70,7 @@ module Hermes
     def delivery_type_for(rails_message)
       to = extract_to(rails_message, format: :address)
 
-      byebug
-      if rails_message.to.first.start_with?('@')
+      if to.is_a?(Hash) && to[:twitter_username]
         :tweet
       elsif rails_message.to.first.include?('@')
         :email
@@ -81,8 +82,17 @@ module Hermes
     end
 
     def deliver!(rails_message)
-      provider = weighted_provider_for_type(delivery_type_for(rails_message))
-      provider.send_message(rails_message)
+      delivery_type = delivery_type_for(rails_message)
+      # puts "Delivering type:#{delivery_type}"
+
+      provider = weighted_provider_for_type(delivery_type)
+      # puts "Delivering provider:#{provider}"
+
+      if self.test
+        ActionMailer::Base.deliveries << rails_message
+      else
+        provider.send_message(rails_message)
+      end
     end
   end
 end
