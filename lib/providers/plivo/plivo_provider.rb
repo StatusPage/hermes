@@ -9,8 +9,8 @@ module Hermes
 
     def payload(rails_message)
       {
-        src:  rails_message[:from].formatted.first,
-        dst:  rails_message[:to].formatted.first,
+        src:  extract_from(rails_message),
+        dst:  extract_to(rails_message),
         text: extract_text(rails_message),
         type: :sms,
         url:  rails_message.plivo_url || self.defaults[:url]

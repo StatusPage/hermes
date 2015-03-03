@@ -11,9 +11,10 @@ module Hermes
     def sendgrid_message(rails_message)
       # requireds
       message = SendGrid::Mail.new({
-        from: rails_message[:from].address_list.addresses.first.address,
-        from_name: rails_message[:from].address_list.addresses.first.name,
-        to: rails_message[:to].formatted,
+        from: extract_from(rails_message, :address),
+        from_name: extract_from(rails_message, :name),
+        to: extract_to(rails_message, :address),
+        to_name: extract_to(rails_message, :name),
         subject: rails_message.subject,
         html: extract_html(rails_message),
         text: extract_text(rails_message),

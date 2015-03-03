@@ -12,8 +12,8 @@ module Hermes
       message = Mailgun::MessageBuilder.new
 
       # basics
-      message.set_from_address(rails_message[:from].formatted)
-      message.add_recipient(:to, rails_message[:to].formatted)
+      message.set_from_address(extract_from(rails_message))
+      message.add_recipient(:to, extract_to(rails_message))
       message.set_subject(rails_message[:subject])
       message.set_html_body(extract_html(rails_message))
       message.set_text_body(extract_text(rails_message))

@@ -2,6 +2,7 @@ require 'digest/md5'
 
 module Hermes
   class Deliverer
+    include Extractors
 
     attr_accessor :providers
 
@@ -65,6 +66,8 @@ module Hermes
     end
 
     def delivery_type_for(rails_message)
+      to = extract_to(rails_message, format: :address)
+
       byebug
       if rails_message.to.first.start_with?('@')
         :tweet

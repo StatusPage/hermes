@@ -12,8 +12,8 @@ module Hermes
 
     def payload(rails_message)
       payload = {
-        to: rails_message.to.first,
-        from: rails_message.from.first,
+        to: extract_to(rails_message),
+        from: extract_from(rails_message),
         body: extract_text(rails_message),
       }
 
