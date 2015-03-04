@@ -3,10 +3,16 @@ module Hermes
     required_credentials :api_user, :api_key
     
     def send_message(rails_message)
-      client.send(sendgrid_message(rails_message))
+      payload = payload(rails_message)
+
+      if self.deliverer.should_deliver?
+        client.send(payload)
+      end
+
+      self.message_success(message_success)
     end
 
-    def sendgrid_message(rails_message)
+    def payload(rails_message)
       # requireds
       message = SendGrid::Mail.new({
         from: extract_from(rails_message, :address),

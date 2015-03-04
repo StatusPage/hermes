@@ -4,14 +4,14 @@ module Hermes
   class Deliverer
     include Extractors
 
-    cattr_accessor :test
-    attr_accessor :providers
+    attr_reader :providers, :config
 
     def initialize(settings)
       @providers = {}
-      self.class.test = !!settings[:test]
+      
+      @config = settings[:config]
 
-      [:email, :sms, :webhook, :tweet].each do |provider_type|
+      [:email, :sms, :tweet, :webhook].each do |provider_type|
         @providers[provider_type] ||= []
         providers = settings[provider_type]
         next unless providers.try(:any?)
@@ -23,17 +23,24 @@ module Hermes
           raise(ProviderNotFoundError, "Could not find provider class Hermes::#{provider_proper_name}") unless Hermes.constants.include?(provider_proper_name)
 
           # initialize the provider with the given weight, defaults, and credentials
-          provider = Hermes.const_get(provider_proper_name).new(options)
+          provider = Hermes.const_get(provider_proper_name).new(self, options)
           @providers[provider_type] << provider
         end
 
         # make sure the provider type has an aggregate weight of more than 1
         aweight = aggregate_weight_for_type(provider_type)
         unless aweight > 0
-          puts settings
           raise(InvalidWeightError, "Provider type:#{provider_type} has aggregate weight:#{aweight}")
         end
       end
+    end
+
+    def test_mode?
+      !!@config[:test]
+    end
+
+    def should_deliver?
+      !self.test_mode? && ActionMailer::Base.perform_deliveries
     end
 
     def aggregate_weight_for_type(type)
@@ -74,25 +81,27 @@ module Hermes
         :tweet
       elsif rails_message.to.first.include?('@')
         :email
-      elsif rails_message.to.first.include?('://')
+      elsif to.is_a?(Phone)
+        :sms
+      elsif to.is_a?(URI)
         :webhook
       else
-        :sms
+        raise UnknownDeliveryTypeError, "Cannot determine provider type from provided to:#{to}"
       end
     end
 
     def deliver!(rails_message)
+      # figure out what we're delivering
       delivery_type = delivery_type_for(rails_message)
-      # puts "Delivering type:#{delivery_type}"
 
+      # set this on the message so it's available throughout
+      rails_message.hermes_type = delivery_type
+
+      # find a provider, weight matters here
       provider = weighted_provider_for_type(delivery_type)
-      # puts "Delivering provider:#{provider}"
 
-      if self.test
-        ActionMailer::Base.deliveries << rails_message
-      else
-        provider.send_message(rails_message)
-      end
+      # and then send the message
+      provider.send_message(rails_message)
     end
   end
 end

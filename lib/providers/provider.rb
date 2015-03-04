@@ -10,13 +10,14 @@ module Hermes
       end
     end
 
-    attr_reader :defaults, :credentials, :weight
+    attr_reader :deliverer, :defaults, :credentials, :weight
 
-    def initialize(options = {})
+    def initialize(deliverer, options = {})
       options.symbolize_keys!
 
+      @deliverer = deliverer
       @defaults = options[:defaults]
-      @credentials = options[:credentials].symbolize_keys
+      @credentials = (options[:credentials] || {}).symbolize_keys
       @weight = options[:weight].to_i
 
       if self.class._required_credentials.try(:any?)
@@ -35,6 +36,21 @@ module Hermes
 
     def provider_name
       self.class.name.demodulize.underscore.gsub('_provider', '')
+    end
+
+    def send_message(rails_message)
+      raise "this is an abstract method and must be defined in the subclass"
+    end
+
+    def message_success(rails_message)
+      ActionMailer::Base.deliveries << rails_message if self.deliverer.test_mode?
+    end
+
+    def message_failure(rails_message, exception)
+      Utils.log_and_puts "--- MESSAGE SEND FAILURE ---"
+      Utils.log_and_puts exception.message
+      Utils.log_and_puts exception.backtrace.join("\n")
+      Utils.log_and_puts "--- MESSAGE SEND FAILURE ---"
     end
   end
 end

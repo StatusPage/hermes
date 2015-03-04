@@ -5,7 +5,12 @@ module Hermes
     def send_message(rails_message)
       domain = rails_message.mailgun_domain || self.defaults[:domain]
       message = self.mailgun_message(rails_message)
-      self.client.send_message(domain, message)
+
+      if self.deliverer.should_deliver?
+        self.client.send_message(domain, message)
+      end
+
+      self.message_success(rails_message)
     end
 
     def mailgun_message(rails_message)

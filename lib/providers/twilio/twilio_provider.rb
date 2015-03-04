@@ -4,15 +4,25 @@ module Hermes
 
     def send_message(rails_message)
       payload = payload(rails_message)
-      result = self.client.account.messages.create(payload)
 
-      # set the sid onto the rails message as the message id, used for tracking
-      rails_message[:message_id] = result.sid
+      if self.deliverer.should_deliver?
+        result = self.client.account.messages.create(payload)
+
+        # set the sid onto the rails message as the message id, used for tracking
+        rails_message[:message_id] = result.sid
+      else
+        # rails message still needs a fake sid as if it succeeded
+        rails_message[:message_id] = SecureRandom.uuid
+      end
+
+      self.message_success(rails_message)
+    rescue Exception => e
+      self.message_failure(rails_message, e)
     end
 
     def payload(rails_message)
       payload = {
-        to: extract_to(rails_message),
+        to: extract_to(rails_message).full_number,
         from: extract_from(rails_message),
         body: extract_text(rails_message),
       }
