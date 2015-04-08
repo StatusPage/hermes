@@ -7,12 +7,16 @@ module Hermes
     attr_reader :providers, :config
 
     def initialize(settings)
+      # Utils.log_and_puts "XXXXX"
+      # Utils.log_and_puts settings
+      # Utils.log_and_puts "XXXXX"
+
       @providers = {}
       
       @config = settings[:config]
 
       # this will most likely come back as [:email, :sms, :tweet, :webhook]
-      provider_types = @config.keys.reject{|key| key == :config}
+      provider_types = settings.keys.reject{|key| key == :config}
       
       # loop through each and construct a workable array
       provider_types.each do |provider_type|
@@ -64,7 +68,10 @@ module Hermes
 
     def weighted_provider_for_type(type)
       providers = @providers[type]
-      return nil if providers.empty?
+      unless providers && providers.any?
+        # byebug
+        raise ProviderNotFoundError, "Could not find any providers for type:#{type}"
+      end
 
       # get the aggregate weight, and do a rand based on it
       random_index = rand(aggregate_weight_for_type(type))

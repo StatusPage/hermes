@@ -13,6 +13,7 @@ module Hermes
     attr_reader :deliverer, :defaults, :credentials, :weight
 
     def initialize(deliverer, options = {})
+      
       options.symbolize_keys!
 
       @deliverer = deliverer
