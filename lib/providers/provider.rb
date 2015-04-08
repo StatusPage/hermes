@@ -44,6 +44,7 @@ module Hermes
 
     def message_success(rails_message)
       ActionMailer::Base.deliveries << rails_message if self.deliverer.test_mode?
+      self.deliverer.handle_success(self.class.name)
     end
 
     def message_failure(rails_message, exception)
@@ -51,6 +52,7 @@ module Hermes
       Utils.log_and_puts exception.message
       Utils.log_and_puts exception.backtrace.join("\n")
       Utils.log_and_puts "--- MESSAGE SEND FAILURE ---"
+      self.deliverer.handle_failure(self.class)
     end
   end
 end

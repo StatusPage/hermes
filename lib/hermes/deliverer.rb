@@ -11,7 +11,11 @@ module Hermes
       
       @config = settings[:config]
 
-      [:email, :sms, :tweet, :webhook].each do |provider_type|
+      # this will most likely come back as [:email, :sms, :tweet, :webhook]
+      provider_types = @config.keys.reject{|key| key == :config}
+      
+      # loop through each and construct a workable array
+      provider_types.each do |provider_type|
         @providers[provider_type] ||= []
         providers = settings[provider_type]
         next unless providers.try(:any?)
@@ -37,6 +41,14 @@ module Hermes
 
     def test_mode?
       !!@config[:test]
+    end
+
+    def handle_success(provider_name)
+      @config[:stats]
+    end
+
+    def handle_failure(provider_name, exception)
+
     end
 
     def should_deliver?
