@@ -96,17 +96,12 @@ module Hermes
     def delivery_type_for(rails_message)
       to = extract_to(rails_message, format: :address)
 
-      if to.is_a?(Hash) && to[:twitter_username]
-        :tweet
-      elsif rails_message.to.first.include?('@')
-        :email
-      elsif to.is_a?(Phone)
-        :sms
-      elsif to.is_a?(URI)
-        :webhook
-      else
-        raise UnknownDeliveryTypeError, "Cannot determine provider type from provided to:#{to}"
+      @config[:mappings].each do |delivery_type, klass|
+        return delivery_type if to.instance_of?(klass)
       end
+
+      # if we got here, nothing matched in the mappings table
+      raise UnknownDeliveryTypeError, "Cannot determine provider type from provided to:#{to}"
     end
 
     def deliver!(rails_message)
