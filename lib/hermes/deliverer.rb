@@ -101,6 +101,7 @@ module Hermes
       end
 
       # if we got here, nothing matched in the mappings table
+      byebug
       raise UnknownDeliveryTypeError, "Cannot determine provider type from provided to:#{to}"
     end
 

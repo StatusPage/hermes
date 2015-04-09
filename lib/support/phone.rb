@@ -227,9 +227,36 @@ module Hermes
       self.class.prefix_for_country(self.country) + self.number
     end
 
-    def self.prefix_for_country(country)
-      return @@countries[country.to_s.downcase][0] unless @@countries[country.to_s.downcase].nil? || @@countries[country.to_s.downcase][0].nil?
-      return nil
+    class << self
+      def prefix_for_country(country)
+        return @@countries[country.to_s.downcase][0] unless @@countries[country.to_s.downcase].nil? || @@countries[country.to_s.downcase][0].nil?
+        return nil
+      end
+
+      def name_for_country(country)
+        return @@countries[country.to_s.downcase][1] unless @@countries[country.to_s.downcase].nil? || @@countries[country.to_s.downcase][1].nil?
+        return nil
+      end
+
+      def country_by_prefix(prefix)
+        prefix = prefix.gsub(/\+/, '')
+        prefix_regex = /^\+.#{prefix}$/
+
+        @@countries.each do |code, prop|
+          return code if prefix.regex =~ prop[0]
+        end
+      end
+
+      def code_for_select_option(select_option)
+        @@countries.each do |code, prop|
+          return code if select_option == select_option_for_country(code)
+        end
+      end
+
+      def select_option_for_country(country)
+        return "#{self.name_for_country(country)} (#{self.prefix_for_country(country)})" unless self.name_for_country(country).nil? || self.prefix_for_country(country).nil?
+        return nil
+      end
     end
   end
 end
