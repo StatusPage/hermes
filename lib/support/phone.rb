@@ -198,10 +198,6 @@ module Hermes
       :zw => ['+263', 'Zimbabwe']
     }.with_indifferent_access
 
-    def self.countries
-      @@countries
-    end
-
     def ==(other_phone)
       self.country == other_phone.country && self.number == other_phone.number
     end
@@ -211,8 +207,10 @@ module Hermes
     end
 
     def initialize(country, number)
+      # we may have a fully qualified number
+      # so try to strip the country code from the front
       @country = country
-      @number = number
+      @number = number.try(:gsub, country_prefix, '')
     end
 
     def country_prefix
@@ -228,13 +226,19 @@ module Hermes
     end
 
     class << self
+      def countries
+        @@countries
+      end
+
       def prefix_for_country(country)
-        return @@countries[country.to_s.downcase][0] unless @@countries[country.to_s.downcase].nil? || @@countries[country.to_s.downcase][0].nil?
+        country = country.to_s.downcase
+        return @@countries[country][0] unless @@countries[country].nil? || @@countries[country][0].nil?
         return nil
       end
 
       def name_for_country(country)
-        return @@countries[country.to_s.downcase][1] unless @@countries[country.to_s.downcase].nil? || @@countries[country.to_s.downcase][1].nil?
+        country = country.to_s.downcase
+        return @@countries[country][1] unless @@countries[country].nil? || @@countries[country][1].nil?
         return nil
       end
 
