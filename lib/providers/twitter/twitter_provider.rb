@@ -3,7 +3,13 @@ module Hermes
     required_credentials :consumer_key, :consumer_secret
     
     def send_message(rails_message)
-      self.client(rails_message).update(extract_text(rails_message))
+      body = extract_text(rails_message)
+
+      if self.deliverer.should_deliver?
+        self.client(rails_message).update(body)
+      end
+
+      self.message_success(rails_message)
     end
 
     def client(rails_message)

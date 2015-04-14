@@ -31,11 +31,11 @@ module Hermes
 
       unless @weight >= 0
         # provider weights need to be 0 (disabled), or greater than 0 to show as active
-        raise(InvalidWeightError, "Provider name:#{provider_name} has invalid weight:#{@weight}")
+        raise(InvalidWeightError, "Provider name:#{common_name} has invalid weight:#{@weight}")
       end
     end
 
-    def provider_name
+    def common_name
       self.class.name.demodulize.underscore.gsub('_provider', '')
     end
 
@@ -45,15 +45,7 @@ module Hermes
 
     def message_success(rails_message)
       ActionMailer::Base.deliveries << rails_message if self.deliverer.test_mode?
-      self.deliverer.handle_success(self.class.name)
-    end
-
-    def message_failure(rails_message, exception)
-      Utils.log_and_puts "--- MESSAGE SEND FAILURE ---"
-      Utils.log_and_puts exception.message
-      Utils.log_and_puts exception.backtrace.join("\n")
-      Utils.log_and_puts "--- MESSAGE SEND FAILURE ---"
-      self.deliverer.handle_failure(self.class)
+      self.deliverer.track_success(self)
     end
   end
 end

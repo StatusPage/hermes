@@ -16,8 +16,6 @@ module Hermes
       end
 
       self.message_success(rails_message)
-    rescue Exception => e
-      self.message_failure(rails_message, e)
     end
 
     def payload(rails_message)

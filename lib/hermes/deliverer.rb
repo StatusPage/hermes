@@ -47,12 +47,16 @@ module Hermes
       !!@config[:test]
     end
 
-    def handle_success(provider_name)
-      @config[:stats]
+    def track_success(provider)
+      @config[:stats].try(:success, provider)
     end
 
-    def handle_failure(provider_name, exception)
+    def track_failure(provider)
+      @config[:stats].try(:failure, provider)
+    end
 
+    def track_attempt(provider, timing)
+      @config[:stats].try(:attempt, provider, timing)
     end
 
     def should_deliver?
@@ -116,7 +120,15 @@ module Hermes
       provider = weighted_provider_for_type(delivery_type)
 
       # and then send the message
-      provider.send_message(rails_message)
+      t = Time.now
+      begin
+        provider.send_message(rails_message)
+      rescue Exception => e
+        self.track_failure(provider)
+        raise e
+      ensure
+        self.track_attempt(provider, (Time.now - t).to_f)
+      end
     end
   end
 end
