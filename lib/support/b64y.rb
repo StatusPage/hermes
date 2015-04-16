@@ -6,11 +6,6 @@ module Hermes
 
     def self.decode(payload)
       YAML.load(Base64.strict_decode64(payload))
-    rescue Exception => e
-      Utils.log_and_puts "--- DECODE FAILURE ---"
-      Utils.log_and_puts payload
-      Utils.log_and_puts "--- DECODE FAILURE ---"
-      raise e
     end
 
     def self.decodable?(payload)

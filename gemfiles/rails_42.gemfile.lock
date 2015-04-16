@@ -1,5 +1,5 @@
 PATH
-  remote: .
+  remote: ../
   specs:
     hermes-rails (0.0.1)
       httparty (>= 0.12)
@@ -77,15 +77,12 @@ GEM
       nokogiri (>= 1.5.9)
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
-    metaclass (0.0.1)
     mime-types (2.4.3)
     mini_portile (0.6.2)
     minitest (5.6.0)
     minitest-spec-rails (5.2.0)
       minitest (~> 5.0)
       rails (~> 4.1)
-    mocha (0.14.0)
-      metaclass (~> 0.0.1)
     multi_xml (0.5.5)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
@@ -144,6 +141,6 @@ DEPENDENCIES
   ffaker
   hermes-rails!
   minitest-spec-rails
-  mocha
+  rails (~> 4.2.1)
   sqlite3
   webmock
