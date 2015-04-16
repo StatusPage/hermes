@@ -100,12 +100,19 @@ module Hermes
     def delivery_type_for(rails_message)
       to = extract_to(rails_message, format: :address)
 
-      @config[:mappings].each do |delivery_type, klass|
-        return delivery_type if to.instance_of?(klass)
+      @config[:mappings].each do |delivery_type, classes|
+        # mappings can specify multiple classes that will match
+        # if it's not an array, it's a single class, put into an array
+        classes = [classes] unless classes.is_a?(Array)
+
+        # then loop through all the options
+        classes.each do |klass|
+          return delivery_type if to.instance_of?(klass)
+        end
       end
 
       # if we got here, nothing matched in the mappings table
-      raise UnknownDeliveryTypeError, "Cannot determine provider type from provided to:#{to}"
+      raise UnknownDeliveryTypeError, "Cannot determine provider type from provided to:#{to} class:#{to.class}"
     end
 
     def deliver!(rails_message)
