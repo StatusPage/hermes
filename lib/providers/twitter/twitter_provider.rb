@@ -8,8 +8,6 @@ module Hermes
       if self.deliverer.should_deliver?
         self.client(rails_message).update(body)
       end
-
-      self.message_success(rails_message)
     end
 
     def client(rails_message)

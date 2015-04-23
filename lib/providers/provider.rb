@@ -6,7 +6,7 @@ module Hermes
       attr_accessor :_required_credentials
 
       def required_credentials(*args)
-        self._required_credentials  = args.to_a
+        self._required_credentials = args.to_a
       end
     end
 
@@ -40,12 +40,7 @@ module Hermes
     end
 
     def send_message(rails_message)
-      raise "this is an abstract method and must be defined in the subclass"
-    end
-
-    def message_success(rails_message)
-      ActionMailer::Base.deliveries << rails_message if self.deliverer.test_mode?
-      self.deliverer.track_success(self)
+      raise ProviderInterfaceError.new("this is an abstract method and must be defined in the subclass")
     end
   end
 end

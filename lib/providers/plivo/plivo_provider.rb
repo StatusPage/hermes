@@ -12,8 +12,6 @@ module Hermes
         # rails message still needs a fake sid as if it succeeded
         rails_message[:message_id] = SecureRandom.uuid
       end
-
-      self.message_success(rails_message)
     end
 
     def payload(rails_message)

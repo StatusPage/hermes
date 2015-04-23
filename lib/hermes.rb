@@ -1,6 +1,5 @@
 require 'action_mailer'
 require 'json'
-require 'httparty'
 
 # all of the Hermes support files
 Dir[File.dirname(__FILE__) + '/support/*.rb'].each {|file| require file }

@@ -50,5 +50,16 @@ module Dummy
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+
+    # eager load all the things
+    config.eager_load = true
+
+    # and get rid of deprecation warning
+    config.active_support.test_order = :random
+
+    # load everything from lib automatically
+    config.autoload_paths += %W(
+      #{Rails.root.join("lib")}
+    )
   end
 end

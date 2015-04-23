@@ -10,6 +10,7 @@ require "factory_girl_rails"
 require "webmock/minitest"
 require "byebug"
 require "mocha/setup"
+require "mailgun"
 
 Rails.backtrace_cleaner.remove_silencers!
 

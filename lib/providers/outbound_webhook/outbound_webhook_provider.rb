@@ -9,8 +9,6 @@ module Hermes
       if self.deliverer.should_deliver?
         outbound_webhook.deliver_async
       end
-
-      self.message_success(rails_message)
     end
 
     def payload(rails_message)
