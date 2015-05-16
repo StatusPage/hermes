@@ -12,16 +12,23 @@ module Hermes
         # rails message still needs a fake sid as if it succeeded
         rails_message[:message_id] = SecureRandom.uuid
       end
+
+      return rails_message
     end
 
     def payload(rails_message)
-      {
+      result = {
         src:  extract_from(rails_message).full_number,
         dst:  extract_to(rails_message),
         text: extract_text(rails_message),
-        type: :sms,
-        url:  rails_message.status_callback_url || self.default(:status_callback_url)
+        type: :sms
       }
+
+      if status_callback = (rails_message.status_callback || self.default(:status_callback))
+        result[:url] = status_callback
+      end
+
+      return result
     end
 
     def client

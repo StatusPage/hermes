@@ -25,8 +25,8 @@ module Hermes
         body: extract_text(rails_message),
       }
 
-      if status_callback_url = rails_message.status_callback_url || self.default(:status_callback_url)
-        payload[:status_callback_url] = status_callback_url
+      if status_callback = rails_message.status_callback || self.default(:status_callback)
+        payload[:status_callback] = status_callback
       end
 
       return payload
