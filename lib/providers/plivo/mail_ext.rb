@@ -1,5 +1,5 @@
 module Mail
   class Message
-    attr_accessor :plivo_url
+    attr_accessor :status_callback_url
   end
 end

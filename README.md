@@ -52,3 +52,8 @@ email.mailgun_headers = {foo: 'bar'}
 Pull requests are welcomed
 
 
+
+
+
+
+A NOTE ABOUT TESTING PLEASE READ: with caching enabled, the deliverer instance at the rails level is cached. therefore, since we're changing configs in the test suite, we need to make sure we use Hermes::Deliverer.new(@settings).deliver!(mail_msg) to avoid the caching behavior issues

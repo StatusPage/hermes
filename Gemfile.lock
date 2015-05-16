@@ -1,3 +1,21 @@
+GIT
+  remote: git://github.com/StatusPage/sendgrid-ruby.git
+  revision: 238182d65c477b5a97304486d251334b1fc46bb7
+  branch: master
+  specs:
+    sendgrid-ruby (0.0.3)
+      rest-client
+      smtpapi
+
+GIT
+  remote: git://github.com/veracross/mailgun-ruby.git
+  revision: 03256867689f53e6284bb9840900c7e5c01e56ee
+  branch: attachment-logic
+  specs:
+    mailgun-ruby (1.0.3)
+      json (~> 1.8)
+      rest-client (~> 1.6)
+
 PATH
   remote: .
   specs:
@@ -84,9 +102,6 @@ GEM
       nokogiri (>= 1.5.9)
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
-    mailgun-ruby (1.0.3)
-      json (~> 1.8)
-      rest-client (~> 1.6)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
     metaclass (0.0.1)
@@ -137,6 +152,7 @@ GEM
       netrc (~> 0.7)
     safe_yaml (1.0.4)
     simple_oauth (0.3.1)
+    smtpapi (0.1.0)
     sprockets (3.0.1)
       rack (~> 1.0)
     sprockets-rails (2.2.4)
@@ -176,9 +192,10 @@ DEPENDENCIES
   factory_girl_rails
   ffaker
   hermes-rails!
-  mailgun-ruby
+  mailgun-ruby!
   minitest-spec-rails
   mocha
+  sendgrid-ruby!
   sqlite3
   twitter
   webmock

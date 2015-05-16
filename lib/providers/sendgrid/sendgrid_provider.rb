@@ -8,15 +8,17 @@ module Hermes
       if self.deliverer.should_deliver?
         client.send(payload)
       end
+
+      return rails_message
     end
 
     def payload(rails_message)
       # requireds
       message = SendGrid::Mail.new({
-        from: extract_from(rails_message, :address),
-        from_name: extract_from(rails_message, :name),
-        to: extract_to(rails_message, :address),
-        to_name: extract_to(rails_message, :name),
+        from: extract_from(rails_message, format: :address),
+        from_name: extract_from(rails_message, format: :name),
+        to: extract_to(rails_message, format: :address),
+        to_name: extract_to(rails_message, format: :name),
         subject: rails_message.subject,
         html: extract_html(rails_message),
         text: extract_text(rails_message),

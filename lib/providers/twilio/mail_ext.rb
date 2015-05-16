@@ -1,5 +1,5 @@
 module Mail
   class Message
-    attr_accessor :twilio_status_callback
+    attr_accessor :status_callback_url
   end
 end

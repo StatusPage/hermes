@@ -17,8 +17,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", ">= 4.0.0"
 
-  # provider dependencies needed for testing
-  s.add_development_dependency "mailgun-ruby"
 
   # other dev and test dependencies
   s.add_development_dependency "sqlite3"
@@ -30,5 +28,4 @@ Gem::Specification.new do |s|
   s.add_development_dependency "webmock"
   s.add_development_dependency "byebug"
   s.add_development_dependency "mocha"
-  s.add_development_dependency "twitter"
 end

@@ -90,4 +90,39 @@ describe Hermes::Provider do
       provider.send_message(nil)
     end
   end
+
+  it "retains deliverer and defaults" do
+    provider = Hermes::FakeVendorProvider.new('asdf', {
+      weight: 5,
+      credentials: {
+        api_key: 'key',
+        api_token: 'token'
+      },
+      defaults: {
+        one: 'two',
+        three: 'four'
+      }
+    })
+
+    assert_equal 'asdf', provider.deliverer
+    assert_equal({one: 'two', three: 'four'}, provider.defaults)
+  end
+
+  it "extracts defaults and allows for a proc" do
+    provider = Hermes::FakeVendorProvider.new('asdf', {
+      weight: 5,
+      credentials: {
+        api_key: 'key',
+        api_token: 'token'
+      },
+      defaults: {
+        one: 'two',
+        three: Proc.new { 'four' }
+      }
+    })
+
+    assert_equal 'two', provider.default(:one)
+    assert_equal 'four', provider.default(:three)
+    assert_nil provider.default(:some_missing_key)
+  end
 end

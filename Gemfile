@@ -5,3 +5,7 @@ source "https://rubygems.org"
 # development dependencies will be added by default to the :development group.
 gemspec
 
+# provider dependencies needed for testing
+gem "twitter"
+gem "sendgrid-ruby", github: 'StatusPage/sendgrid-ruby', branch: 'master'
+gem "mailgun-ruby", require: 'mailgun', github: 'veracross/mailgun-ruby', branch: 'attachment-logic'

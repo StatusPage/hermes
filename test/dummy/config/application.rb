@@ -61,5 +61,8 @@ module Dummy
     config.autoload_paths += %W(
       #{Rails.root.join("lib")}
     )
+
+    # hermes all the things
+    config.action_mailer.delivery_method = :hermes
   end
 end

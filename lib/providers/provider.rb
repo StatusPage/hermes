@@ -17,7 +17,7 @@ module Hermes
       options.symbolize_keys!
 
       @deliverer = deliverer
-      @defaults = options[:defaults]
+      @defaults = (options[:defaults] || {}).symbolize_keys
       @credentials = (options[:credentials] || {}).symbolize_keys
       @weight = options[:weight].to_i
 
@@ -37,6 +37,17 @@ module Hermes
 
     def common_name
       self.class.name.demodulize.underscore.gsub('_provider', '')
+    end
+
+    def default(key)
+      v = self.defaults.fetch(key, nil)
+      return unless v
+
+      if v.is_a?(Proc)
+        v.call
+      else
+        v
+      end
     end
 
     def send_message(rails_message)

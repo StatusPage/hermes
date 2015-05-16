@@ -9,6 +9,8 @@ module Hermes
       if self.deliverer.should_deliver?
         self.client.send_message(domain, message)
       end
+
+      return rails_message
     end
 
     def mailgun_message(rails_message)

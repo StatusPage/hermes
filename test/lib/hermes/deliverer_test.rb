@@ -133,6 +133,7 @@ describe Hermes::Deliverer do
       email = 'Scott Klein <scott@example.com>'
       phone = Hermes::B64Y.encode(Hermes::Phone.new('us', '9198675309'))
       beeper = Hermes::B64Y.encode(Hermes::Beeper.new('us', '9195551234'))
+      twitter = Hermes::B64Y.encode(Twitter::Client.new)
 
       deliverer = Hermes::Deliverer.new(@settings)
 
@@ -146,6 +147,12 @@ describe Hermes::Deliverer do
 
       message = SandboxSender.variable_to(beeper)
       assert_equal :sms, deliverer.delivery_type_for(message)
+
+      # twitter we don't have anything for, should raise
+      message = SandboxSender.variable_to(twitter)
+      assert_raises Hermes::UnknownDeliveryTypeError do
+        deliverer.delivery_type_for(message)
+      end
     end
   end
 

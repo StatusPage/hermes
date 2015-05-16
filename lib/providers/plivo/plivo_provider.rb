@@ -20,7 +20,7 @@ module Hermes
         dst:  extract_to(rails_message),
         text: extract_text(rails_message),
         type: :sms,
-        url:  rails_message.plivo_url || self.defaults[:url]
+        url:  rails_message.status_callback_url || self.default(:status_callback_url)
       }
     end
 

@@ -10,7 +10,10 @@ require "factory_girl_rails"
 require "webmock/minitest"
 require "byebug"
 require "mocha/setup"
+
+# includes for testing
 require "mailgun"
+require "twitter"
 
 Rails.backtrace_cleaner.remove_silencers!
 
@@ -31,16 +34,6 @@ class Minitest::Spec
   include FactoryGirl::Syntax::Methods
 
   before :each do
-    stub_request(:any, "https://api.fastly.com/login").
-      to_return(
-        :status   => 200,
-        :body     => "{}"
-    )
-    stub_request(:post, /https:\/\/api.fastly.com\/service\/.*\/purge\/.*/)
-    .to_return(
-      body: "{\"status\":\"ok\"}"
-    )
-
     DatabaseCleaner.start
   end
 
@@ -48,6 +41,41 @@ class Minitest::Spec
     DatabaseCleaner.clean
   end
 
+  def reset_email!
+    ActionMailer::Base.deliveries.delete_if{|message| message.hermes_type == :email}
+  end
+
+  def last_email
+    ActionMailer::Base.deliveries.select{|message| message.hermes_type == :email}.last
+  end
+
+  def email_count
+    ActionMailer::Base.deliveries.select{|message| message.hermes_type == :email}.count
+  end
+
+  def reset_texts!
+    ActionMailer::Base.deliveries.delete_if{|message| message.hermes_type == :sms}
+  end
+
+  def last_text
+    ActionMailer::Base.deliveries.select{|message| message.hermes_type == :sms}.last
+  end
+
+  def texts_count
+    ActionMailer::Base.deliveries.select{|message| message.hermes_type == :sms}.count
+  end
+
+  def reset_tweets!
+    ActionMailer::Base.deliveries.delete_if{|message| message.hermes_type == :tweet}
+  end
+
+  def last_tweet
+    ActionMailer::Base.deliveries.select{|message| message.hermes_type == :tweet}.last
+  end
+
+  def tweets_count
+    ActionMailer::Base.deliveries.select{|message| message.hermes_type == :tweet}.count
+  end
 end
 
 class ActionController::TestCase
