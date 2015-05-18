@@ -19,17 +19,23 @@ module Hermes
     end
 
     def payload(rails_message)
-      payload = {
+      result = {
         to: extract_to(rails_message).full_number,
-        from: extract_from(rails_message),
         body: extract_text(rails_message),
       }
 
-      if status_callback = rails_message.status_callback || self.default(:status_callback)
-        payload[:status_callback] = status_callback
+      # if twilio_from is specified then let's use that, otherwise use the default from
+      if rails_message.twilio_from.present?
+        result[:from] = extract_from(rails_message, source: :twilio).full_number
+      else
+        result[:from] = extract_from(rails_message).full_number
       end
 
-      return payload
+      if status_callback = rails_message.twilio_status_callback || self.default(:status_callback)
+        result[:status_callback] = status_callback
+      end
+
+      return result
     end
 
     def client

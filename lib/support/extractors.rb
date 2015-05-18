@@ -18,8 +18,24 @@ module Hermes
     end
 
     # format can be full|name|address
-    def extract_from(rails_message, format: :full)
-      from = complex_extract(rails_message.from.first)
+    def extract_from(rails_message, format: :full, source: nil)
+      from = nil
+
+      # check to see if a source is present, and if it is use the naming convention
+      if source.present?
+        attr_name = "#{source}_from"
+        attr_value = rails_message.send(attr_name)
+
+        # if attr_value is present, set it to from, and we'll continue to fall through
+        from = attr_value if attr_value
+      end
+
+      # if a source was specified and value found, from should already be set
+      # otherwise we need to fall back to the normal from field
+      from ||= rails_message.from.first
+
+      # try to do a complex extract on the from, and proceed from there
+      from = complex_extract(from)
       return from[:value] if from[:decoded]
 
       case format
