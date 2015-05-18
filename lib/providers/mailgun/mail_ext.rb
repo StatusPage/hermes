@@ -1,5 +1,5 @@
 module Mail
   class Message
-    attr_accessor :domain
+    attr_accessor :mailgun_domain
   end
 end
