@@ -6,8 +6,8 @@ module Hermes
       payload = payload(rails_message)
 
       if self.deliverer.should_deliver?
-        result = self.client.send_message(payload)
-        rails_message[:message_id] = result["api_id"]
+        code, body = self.client.send_message(payload)
+        rails_message[:message_id] = body["api_id"]
       else
         # rails message still needs a fake sid as if it succeeded
         rails_message[:message_id] = SecureRandom.uuid
