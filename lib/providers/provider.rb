@@ -1,9 +1,9 @@
 module Hermes
   class Provider
-    include Extractors 
+    include Extractors
 
     class << self
-      attr_accessor :_required_credentials
+      attr_accessor :_required_credentials, :_provider_specific_data
 
       def required_credentials(*args)
         self._required_credentials = args.to_a
@@ -13,14 +13,16 @@ module Hermes
     attr_reader :deliverer, :defaults, :credentials, :weight
 
     def initialize(deliverer, options = {})
-      
+
       options.symbolize_keys!
 
+      # keep some things around that we'll need
       @deliverer = deliverer
       @defaults = (options[:defaults] || {}).symbolize_keys
       @credentials = (options[:credentials] || {}).symbolize_keys
       @weight = options[:weight].to_i
 
+      # required credentials should hard stop if they aren't being met
       if self.class._required_credentials.try(:any?)
         # provider defines required credentials, let's make sure to check we have everything we need
         if !((@credentials.keys & self.class._required_credentials) == self.class._required_credentials)
@@ -29,8 +31,8 @@ module Hermes
         end
       end
 
+      # provider weights need to be 0 (disabled), or greater than 0 to show as active
       unless @weight >= 0
-        # provider weights need to be 0 (disabled), or greater than 0 to show as active
         raise(InvalidWeightError, "Provider name:#{common_name} has invalid weight:#{@weight}")
       end
     end

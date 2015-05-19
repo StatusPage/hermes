@@ -19,19 +19,14 @@ module Hermes
     def payload(rails_message)
       # common for all requests
       result = {
+        src:  extract_from(rails_message, source: :plivo).full_number,
         dst:  extract_to(rails_message).full_number,
         text: extract_text(rails_message),
         type: :sms
       }
 
-      # if plivo_from is specified then let's use that, otherwise use the default from
-      if rails_message.plivo_from.present?
-        result[:src] = extract_from(rails_message, source: :plivo).full_number
-      else
-        result[:src] = extract_from(rails_message).full_number
-      end
-
-      if status_callback = (rails_message.plivo_status_callback || self.default(:status_callback))
+      # status callback if they want one
+      if status_callback = (extract_custom(rails_message, :plivo_status_callback) || self.default(:status_callback))
         result[:url] = status_callback
       end
 

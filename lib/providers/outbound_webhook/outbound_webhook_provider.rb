@@ -3,7 +3,6 @@ module Hermes
 
     def send_message(rails_message)
       payload = payload(rails_message)
-      byebug
 
       outbound_webhook = OutboundWebhook.create!(payload)
       rails_message[:message_id] = outbound_webhook.id
@@ -11,6 +10,8 @@ module Hermes
       if self.deliverer.should_deliver?
         outbound_webhook.deliver_async
       end
+
+      return rails_message
     end
 
     def payload(rails_message)

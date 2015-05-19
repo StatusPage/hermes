@@ -39,6 +39,28 @@ describe Hermes::TwilioProvider do
     assert_equal 1, texts_count
   end
 
+  it "sets url with message variable, then default, but is okay with nothing" do
+    # set the default so it's available
+    @provider.defaults[:status_callback] = 'a.com'
+
+    # message variable
+    msg = SandboxTexter.nba_declaration('Houston Rockets')
+    msg[:twilio_status_callback] = 'b.com'
+    assert_equal 'b.com', @provider.payload(msg)[:status_callback]
+
+    msg[:twilio_status_callback] = nil
+    msg.twilio_status_callback = 'b.com'
+    assert_equal 'b.com', @provider.payload(msg)[:status_callback]
+
+    # default
+    msg.twilio_status_callback = nil
+    assert_equal 'a.com', @provider.payload(msg)[:status_callback]
+
+    # nothing
+    @provider.defaults[:status_callback] = nil
+    assert_nil @provider.payload(msg)[:status_callback]
+  end
+
   it "prefers the twilio_from field to the from field" do
     msg = SandboxTexter.nba_declaration('Houston Rockets')
 

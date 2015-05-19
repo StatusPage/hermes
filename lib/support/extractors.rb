@@ -17,22 +17,34 @@ module Hermes
       end
     end
 
+    def extract_custom(rails_message, attr_name)
+      # first use the [] methods to see if we can get at this variable
+      # this will happen when we call something like
+      # mail(to: 'scott@sp', from: 'fake', plivo_from: '+19196022733')
+      attr_value = rails_message[attr_name]
+
+      # this will be an instance of Mail::Field, so we need to call #value on it to get the raw string
+      return attr_value.value if attr_value
+
+      # try to call the method on the rails_message
+      # this will handle the attr_accessor case where
+      # we've monkeypatched Mail::Message
+      return rails_message.send(attr_name)
+    end
+
     # format can be full|name|address
     def extract_from(rails_message, format: :full, source: nil)
       from = nil
 
       # check to see if a source is present, and if it is use the naming convention
       if source.present?
-        attr_name = "#{source}_from"
-        attr_value = rails_message.send(attr_name)
-
-        # if attr_value is present, set it to from, and we'll continue to fall through
-        from = attr_value if attr_value
+        # we'll set from here, and then fall through
+        from = extract_custom(rails_message, "#{source}_from")
       end
 
       # if a source was specified and value found, from should already be set
       # otherwise we need to fall back to the normal from field
-      from ||= rails_message.from.first
+      from ||= rails_message[:from].formatted.first
 
       # try to do a complex extract on the from, and proceed from there
       from = complex_extract(from)

@@ -37,7 +37,18 @@ describe Hermes::Extractors do
       assert_equal @wrapper.extract_from(@texter_message, format: :address), from
     end
 
-    it "handles a source and a special naming convention" do
+    it "handles a source and a special naming convention using [] and []=" do
+      plivo_from = Hermes::Phone.new('us', '9193245341')
+      twilio_from = Hermes::Phone.new('us', '9196022733')
+
+      @texter_message[:plivo_from] = Hermes::B64Y.encode(plivo_from)
+      @texter_message[:twilio_from] = Hermes::B64Y.encode(twilio_from)
+
+      assert_equal @wrapper.extract_from(@texter_message, source: :plivo), plivo_from
+      assert_equal @wrapper.extract_from(@texter_message, source: :twilio), twilio_from
+    end
+
+    it "handles a source and a special naming convention using attr_accessor" do
       plivo_from = Hermes::Phone.new('us', '9193245341')
       twilio_from = Hermes::Phone.new('us', '9196022733')
 
