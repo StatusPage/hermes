@@ -69,21 +69,45 @@ module Hermes
       !self.test_mode? && ActionMailer::Base.perform_deliveries
     end
 
-    def aggregate_weight_for_type(type)
-      providers = @providers[type]
-      raise ProviderTypeNotFoundError, "Unknown provider type (#{type})" if providers.nil?
+    def aggregate_weight_for_type(type, filter: [])
+      filter = condition_provider_filter(filter)
 
+      # grab all the providers for the type
+      providers = @providers[type]
+      raise ProviderTypeNotFoundError, "No providers found for type:#{type}" if providers.nil?
+
+      # filter down the providers if needed
+      providers.select!{|provider_instance|
+        filter.empty? || filter.include?(provider_instance.class)
+      }
+
+      # then sum up all of the weights across our providers
       providers.map(&:weight).inject(0, :+)
     end
 
-    def weighted_provider_for_type(type)
+    def weighted_provider_for_type(type, filter: [])
+      filter = condition_provider_filter(filter)
+      
+      # grab the providers
       providers = @providers[type]
-      unless providers && providers.any?
-        raise ProviderNotFoundError, "Could not find any providers for type:#{type}"
-      end
+      raise ProviderNotFoundError, "Could not find any providers for type:#{type}" unless providers
 
-      # get the aggregate weight, and do a rand based on it
-      random_index = rand(aggregate_weight_for_type(type))
+      # filter down if needed
+      providers.select!{|provider_instance|
+        # select providers that match the filter list
+        # or take everything if filter list is blank
+        filter.empty? || filter.include?(provider_instance.class)
+      }
+
+      # if we end up with an empty list we're in trouble
+      raise ProviderNotFoundError, "Empty provider list found for type:#{type} filter:#{filter}" unless providers.any?
+
+      # get the aggregate weight, and make sure it's more than 0 after the filter
+      aggregate_weight = aggregate_weight_for_type(type, filter: filter)
+      raise InvalidWeightError, "Non-positive weight for providers type:#{type} filter:#{filter}" unless aggregate_weight > 0
+
+      # do a rand based on it, this will be our random weighted selection
+      random_index = rand(aggregate_weight)
 
       # loop through each, exclusive range, and find the one that it falls on
       running_total = 0
@@ -124,8 +148,11 @@ module Hermes
       # set this on the message so it's available throughout
       rails_message.hermes_type = delivery_type
 
-      # find a provider, weight matters here
-      provider = weighted_provider_for_type(delivery_type)
+      # check for filters that we needt o pass into the provider selection
+      providers = extract_hermes_providers(rails_message)
+
+      # weight matters here, will be handled under the hood
+      provider = weighted_provider_for_type(delivery_type, filter: providers)
 
       # and then send the message with some timing info
       t = Time.now
@@ -147,6 +174,19 @@ module Hermes
       ensure
         # in the very least, track an attempt with some timing
         self.track_attempt(provider, timing_float(t))
+      end
+    end
+
+    def condition_provider_filter(filter)
+      if filter.nil?
+        # if we're nil, use an empty array instaed
+        []
+      elsif !filter.is_a?(Array)
+        # if we're not any array, it's a single item, put it in an array
+        [filter]
+      else
+        # otherwise we're an array, return ourself
+        filter
       end
     end
 

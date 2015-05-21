@@ -17,6 +17,32 @@ module Hermes
       end
     end
 
+    def extract_hermes_providers(rails_message)
+      # extract the filters and get it into an array, will be strings to start
+      # in the event of hermes_providers (plural), string will be comma-separated
+      # ex. "Hermes::TwilioProvider, Hermes::PlivoProvider"
+      filters = extract_custom(rails_message, :hermes_provider) || extract_custom(rails_message, :hermes_providers)
+
+      # bail if we got nothing
+      return if filters.nil?
+
+      # if it's a string, we may have 1 or more providers in a comma-separated format
+      filters = filters.split(',').map(&:strip) if filters.is_a?(String)
+
+      # if we end up with one item, put it in an array
+      filters = [filters] unless filters.is_a?(Array)
+
+      # will either be an array here or nil
+      # each item may be a string, or it may be a class
+      filters.collect{|filter|
+        if filter.is_a?(String)
+          filter.constantize
+        else
+          filter
+        end
+      }
+    end
+
     def extract_custom(rails_message, attr_name)
       # first use the [] methods to see if we can get at this variable
       # this will happen when we call something like

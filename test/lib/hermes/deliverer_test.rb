@@ -28,12 +28,19 @@ describe Hermes::Deliverer do
             account_sid: 'twilio_account_sid',
             auth_token: 'twilio_auth_token'
           },
-          weight: 3
+          weight: 6
         },
         plivo: {
           credentials: {
             auth_id: 'plivo_auth_id',
             auth_token: 'plivo_auth_token'
+          },
+          weight: 1
+        },
+        nexmo: {
+          credentials: {
+            api_key: 'nexmo_api_key',
+            api_secret: 'nexmo_api_secret'
           },
           weight: 1
         }
@@ -100,7 +107,7 @@ describe Hermes::Deliverer do
 
       # successfully found
       assert_equal 1, deliverer.aggregate_weight_for_type(:email)
-      assert_equal 4, deliverer.aggregate_weight_for_type(:sms)
+      assert_equal 8, deliverer.aggregate_weight_for_type(:sms)
 
       # cannot find
       assert_raises(Hermes::ProviderTypeNotFoundError, "Unknown provider type (asdf)") do
@@ -108,25 +115,52 @@ describe Hermes::Deliverer do
       end
     end
 
-    it "does a weighted selection of a provider" do
-      # use sms here, run 1000 selections and check the results
-      # we should be +/- some threshold of values
-      # twilio should end up roughly 75% of the selections
-      deliverer = Hermes::Deliverer.new(@settings)
-      variation_threshold = 40
+    describe "does a weighted selection of a provider" do
+      it "can accept no filters" do
+        # use sms here, run 1000 selections and check the results
+        # we should be +/- some threshold of values
+        # twilio should end up roughly 75% of the selections
+        deliverer = Hermes::Deliverer.new(@settings)
+        variation_threshold = 35
 
-      # keep track of the results as we go along, then we'll check the counts later
-      results = {
-        Hermes::TwilioProvider => 0,
-        Hermes::PlivoProvider => 0
-      }
+        # keep track of the results as we go along, then we'll check the counts later
+        results = {
+          Hermes::TwilioProvider => 0,
+          Hermes::PlivoProvider => 0,
+          Hermes::NexmoProvider => 0
+        }
 
-      1000.times do
-        provider = deliverer.weighted_provider_for_type(:sms)
-        results[provider.class] += 1
+        1000.times do
+          provider = deliverer.weighted_provider_for_type(:sms)
+          results[provider.class] += 1
+        end
+
+        assert_in_delta results[Hermes::TwilioProvider], 750, variation_threshold, "Variation threshold:#{variation_threshold} may be too low. Consider adjusting."
+        assert_in_delta results[Hermes::PlivoProvider], 125, variation_threshold, "Variation threshold:#{variation_threshold} may be too low. Consider adjusting."
+        assert_in_delta results[Hermes::NexmoProvider], 125, variation_threshold, "Variation threshold:#{variation_threshold} may be too low. Consider adjusting."
       end
 
-      assert_in_delta results[Hermes::TwilioProvider], 750, variation_threshold
+      it "can accept filters" do
+        # filter on just plivo and nexmo here, we should see roughly 50/50
+        deliverer = Hermes::Deliverer.new(@settings)
+        variation_threshold = 30
+
+        # keep track of the results as we go along, then we'll check the counts later
+        results = {
+          Hermes::TwilioProvider => 0,
+          Hermes::PlivoProvider => 0,
+          Hermes::NexmoProvider => 0
+        }
+
+        1000.times do
+          provider = deliverer.weighted_provider_for_type(:sms, filter: [Hermes::PlivoProvider, Hermes::NexmoProvider])
+          results[provider.class] += 1
+        end
+
+        assert_equal results[Hermes::TwilioProvider], 0
+        assert_in_delta results[Hermes::PlivoProvider], 500, variation_threshold, "Variation threshold:#{variation_threshold} may be too low. Consider adjusting."
+        assert_in_delta results[Hermes::NexmoProvider], 500, variation_threshold, "Variation threshold:#{variation_threshold} may be too low. Consider adjusting."
+      end
     end
 
     it "detects a delivery type for a rails message based on the to field and the mappings array" do
@@ -186,6 +220,10 @@ describe Hermes::Deliverer do
       assert_empty ActionMailer::Base.deliveries
       deliverer.deliver!(@message)
       assert_empty ActionMailer::Base.deliveries
+    end
+
+    it "detects a provider filter being passed in" do
+      
     end
   end
 

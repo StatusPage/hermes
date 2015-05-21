@@ -22,6 +22,25 @@ describe Hermes::Extractors do
     assert_equal @wrapper.extract_text(@mailer_message), "Hi Mike, just wanted to let you know I'm hoping to be drafted by the *New Orleans Pelicans*"
   end
 
+  describe "extracts hermes providers" do
+    it "passing into message" do
+      message = SandboxMailer.nba_declaration_with_filter('New Orleans Pelicans', Hermes::TwilioProvider)
+      assert_equal [Hermes::TwilioProvider], @wrapper.extract_hermes_providers(message)
+
+      message = SandboxMailer.nba_declaration_with_filters('New Orleans Pelicans', [Hermes::TwilioProvider, Hermes::PlivoProvider])
+      assert_equal [Hermes::TwilioProvider, Hermes::PlivoProvider], @wrapper.extract_hermes_providers(message)
+    end
+
+    it "passing in via methods" do
+      @mailer_message.hermes_provider = Hermes::TwilioProvider
+      assert_equal [Hermes::TwilioProvider], @wrapper.extract_hermes_providers(@mailer_message)
+
+      @mailer_message.hermes_provider = nil
+      @mailer_message.hermes_providers = [Hermes::TwilioProvider, Hermes::PlivoProvider]
+      assert_equal [Hermes::TwilioProvider, Hermes::PlivoProvider], @wrapper.extract_hermes_providers(@mailer_message)
+    end
+  end
+
   describe "extracts from" do
     it "handles emails, which have multiple parts" do
       assert_equal @wrapper.extract_from(@mailer_message, format: :full), 'Tyus Jones <tyus@duke.edu>'
