@@ -121,7 +121,7 @@ describe Hermes::Deliverer do
         # we should be +/- some threshold of values
         # twilio should end up roughly 75% of the selections
         deliverer = Hermes::Deliverer.new(@settings)
-        variation_threshold = 35
+        variation_threshold = 40
 
         # keep track of the results as we go along, then we'll check the counts later
         results = {
@@ -223,7 +223,7 @@ describe Hermes::Deliverer do
     end
 
     it "detects a provider filter being passed in" do
-      
+
     end
   end
 
