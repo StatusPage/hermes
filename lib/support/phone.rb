@@ -261,6 +261,45 @@ module Hermes
         return "#{self.name_for_country(country)} (#{self.prefix_for_country(country)})" unless self.name_for_country(country).nil? || self.prefix_for_country(country).nil?
         return nil
       end
+
+      def possible_full_number_extractions(full_number)
+        # this will come inbound as something like '16498675309' or '+16498675309'
+        # and we need to extract the following as possible list of results
+        # [
+        #   {
+        #     country: :us,
+        #     number: '6498675309'
+        #   },
+        #   {
+        #     country: :ca,
+        #     number: '6498675309',
+        #   },
+        #   {
+        #     country: :tc,
+        #     number: '8675309'
+        #   }
+        # ]
+
+        results = []
+        countries.each do |country_code, (prefix, name)|
+          # try with the plus, and with the plus trimmed
+          full = prefix
+          short = prefix[1..-1]
+
+          # see if the number starts with either the full or the short prefix
+          has_full = full_number.start_with?(full)
+          has_short = full_number.start_with?(short)
+
+          # if either match, do the extraction
+          if has_full
+            results << Hermes::Phone.new(country_code, full_number[full.length..-1])
+          elsif has_short
+            results << Hermes::Phone.new(country_code, full_number[short.length..-1])
+          end
+        end
+
+        return results
+      end
     end
   end
 end
