@@ -3,7 +3,9 @@ module Hermes
     required_credentials :api_key
 
     def send_message(rails_message)
-      domain = extract_custom(rails_message, :mailgun_domain) || self.defaults[:domain]
+      domain = extract_custom(rails_message, :mailgun_domain)
+      domain = self.defaults[:domain] if domain.blank?
+      # Utils.log_and_puts "Extracted domain:#{domain} from custom:#{extract_custom(rails_message, :mailgun_domain).class} default:#{self.defaults[:domain]}"
       message = self.mailgun_message(rails_message)
 
       if self.deliverer.should_deliver?
