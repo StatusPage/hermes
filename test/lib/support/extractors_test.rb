@@ -23,21 +23,42 @@ describe Hermes::Extractors do
   end
 
   describe "extracts hermes providers" do
-    it "passing into message" do
-      message = SandboxMailer.nba_declaration_with_filter('New Orleans Pelicans', Hermes::TwilioProvider)
-      assert_equal [Hermes::TwilioProvider], @wrapper.extract_hermes_providers(message)
+    describe "singular" do
+      it "accepts passing into message" do
+        message = SandboxMailer.nba_declaration_with_filter('New Orleans Pelicans', Hermes::TwilioProvider)
+        assert_equal [Hermes::TwilioProvider], @wrapper.extract_hermes_providers(message)
 
-      message = SandboxMailer.nba_declaration_with_filters('New Orleans Pelicans', [Hermes::TwilioProvider, Hermes::PlivoProvider])
-      assert_equal [Hermes::TwilioProvider, Hermes::PlivoProvider], @wrapper.extract_hermes_providers(message)
+        message = SandboxMailer.nba_declaration_with_filter('New Orleans Pelicans', [Hermes::TwilioProvider, Hermes::PlivoProvider])
+        assert_equal [Hermes::TwilioProvider, Hermes::PlivoProvider], @wrapper.extract_hermes_providers(message)
+      end
+
+      it "accepts passing in via methods" do
+        @mailer_message.hermes_provider = Hermes::TwilioProvider
+        assert_equal [Hermes::TwilioProvider], @wrapper.extract_hermes_providers(@mailer_message)
+
+        @mailer_message.hermes_provider = nil
+        @mailer_message.hermes_provider = [Hermes::TwilioProvider, Hermes::PlivoProvider]
+        assert_equal [Hermes::TwilioProvider, Hermes::PlivoProvider], @wrapper.extract_hermes_providers(@mailer_message)
+      end
     end
 
-    it "passing in via methods" do
-      @mailer_message.hermes_provider = Hermes::TwilioProvider
-      assert_equal [Hermes::TwilioProvider], @wrapper.extract_hermes_providers(@mailer_message)
+    describe "plural" do
+      it "accepts passing into message" do
+        message = SandboxMailer.nba_declaration_with_filters('New Orleans Pelicans', Hermes::TwilioProvider)
+        assert_equal [Hermes::TwilioProvider], @wrapper.extract_hermes_providers(message)
 
-      @mailer_message.hermes_provider = nil
-      @mailer_message.hermes_providers = [Hermes::TwilioProvider, Hermes::PlivoProvider]
-      assert_equal [Hermes::TwilioProvider, Hermes::PlivoProvider], @wrapper.extract_hermes_providers(@mailer_message)
+        message = SandboxMailer.nba_declaration_with_filters('New Orleans Pelicans', [Hermes::TwilioProvider, Hermes::PlivoProvider])
+        assert_equal [Hermes::TwilioProvider, Hermes::PlivoProvider], @wrapper.extract_hermes_providers(message)
+      end
+
+      it "accepts passing in via methods" do
+        @mailer_message.hermes_providers = Hermes::TwilioProvider
+        assert_equal [Hermes::TwilioProvider], @wrapper.extract_hermes_providers(@mailer_message)
+
+        @mailer_message.hermes_providers = nil
+        @mailer_message.hermes_providers = [Hermes::TwilioProvider, Hermes::PlivoProvider]
+        assert_equal [Hermes::TwilioProvider, Hermes::PlivoProvider], @wrapper.extract_hermes_providers(@mailer_message)
+      end
     end
   end
 
