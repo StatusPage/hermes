@@ -144,7 +144,7 @@ module Hermes
       :ph => ['+63',    'Philippines'],
       :pl => ['+48',    'Poland'],
       :pt => ['+351',   'Portugal'],
-      :pr => ['+1787',  'Puerto Rico'],
+      :pr => ['+1',     'Puerto Rico'],
       :qa => ['+974',   'Qatar'],
       :re => ['+262',   'Reunion/Mayotte'],
       :ro => ['+40',    'Romania'],
