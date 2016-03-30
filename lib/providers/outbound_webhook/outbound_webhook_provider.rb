@@ -22,7 +22,8 @@ module Hermes
         :headers => {
           'Content-Type' => 'application/json'
         },
-        :body => extract_text(rails_message)
+        :body => extract_text(rails_message),
+        subscriber_notification_id: extract_custom(rails_message, :subscriber_notification_id)
       }
     end
   end
