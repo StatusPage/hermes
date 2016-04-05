@@ -4,11 +4,11 @@ module Hermes
     def send_message(rails_message)
       payload = payload(rails_message)
 
-      outbound_webhook = OutboundWebhook.create!(payload)
+      outbound_webhook = OutboundWebhook.find_by(subscriber_notification_id: payload[:subscriber_notification_id]) || OutboundWebhook.create!(payload)
       rails_message[:message_id] = outbound_webhook.id
 
       if self.deliverer.should_deliver?
-        outbound_webhook.deliver_async
+        outbound_webhook.deliver!
       end
 
       return rails_message
@@ -22,7 +22,8 @@ module Hermes
         :headers => {
           'Content-Type' => 'application/json'
         },
-        :body => extract_text(rails_message)
+        :body => extract_text(rails_message),
+        subscriber_notification_id: extract_custom(rails_message, :subscriber_notification_id)
       }
     end
   end
