@@ -3,6 +3,12 @@ module Hermes
 
     attr_accessor :country, :number
 
+    CODE_LENGTH_RANGE_BY_COUNTRY_CODE = {
+      "ca" => 5..6,
+      "uk" => 5..5,
+      "us" => 5..6,
+    }
+
     @@countries = {
       :af => ['+93',    'Afghanistan'],
       :al => ['+355',   'Albania'],
@@ -222,7 +228,17 @@ module Hermes
     end
 
     def full_number
-      self.class.prefix_for_country(self.country) + self.number
+      if self.short_code?
+        self.number
+      else
+        self.class.prefix_for_country(self.country) + self.number
+      end
+    end
+
+    def short_code?
+      range = CODE_LENGTH_RANGE_BY_COUNTRY_CODE[self.country]
+
+      range.present? && range.include?(self.number.length)
     end
 
     class << self
