@@ -81,6 +81,10 @@ describe Hermes::Extractors do
       from = Hermes::Phone.new("us", "12345")
       from.full_number.must_equal "12345"
       from.short_code?.must_equal true
+
+      from = Hermes::Phone.new("af", "12345")
+      from.full_number.must_equal("+9312345")
+      from.short_code?.must_equal false
     end
 
     it "handles a source and a special naming convention using [] and []=" do

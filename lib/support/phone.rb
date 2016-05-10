@@ -9,7 +9,7 @@ module Hermes
       "us" => 5..6,
     }
 
-    @@countries = {
+    COUNTRIES = {
       :af => ['+93',    'Afghanistan'],
       :al => ['+355',   'Albania'],
       :dz => ['+213',   'Algeria'],
@@ -236,25 +236,23 @@ module Hermes
     end
 
     def short_code?
-      range = CODE_LENGTH_RANGE_BY_COUNTRY_CODE[self.country]
-
-      range.present? && range.include?(self.number.length)
+      !!CODE_LENGTH_RANGE_BY_COUNTRY_CODE[self.country].try(:include?, self.number.length)
     end
 
     class << self
       def countries
-        @@countries
+        COUNTRIES
       end
 
       def prefix_for_country(country)
         country = country.to_s.downcase
-        return @@countries[country][0] unless @@countries[country].nil? || @@countries[country][0].nil?
+        return COUNTRIES[country][0] unless COUNTRIES[country].nil? || COUNTRIES[country][0].nil?
         return nil
       end
 
       def name_for_country(country)
         country = country.to_s.downcase
-        return @@countries[country][1] unless @@countries[country].nil? || @@countries[country][1].nil?
+        return COUNTRIES[country][1] unless COUNTRIES[country].nil? || COUNTRIES[country][1].nil?
         return nil
       end
 
@@ -262,13 +260,13 @@ module Hermes
         prefix = prefix.gsub(/\+/, '')
         prefix_regex = /^\+.#{prefix}$/
 
-        @@countries.each do |code, prop|
+        COUNTRIES.each do |code, prop|
           return code if prefix.regex =~ prop[0]
         end
       end
 
       def code_for_select_option(select_option)
-        @@countries.each do |code, prop|
+        COUNTRIES.each do |code, prop|
           return code if select_option == select_option_for_country(code)
         end
       end
