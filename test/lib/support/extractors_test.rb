@@ -77,6 +77,16 @@ describe Hermes::Extractors do
       assert_equal @wrapper.extract_from(@texter_message, format: :address), from
     end
 
+    it "handles short codes" do
+      from = Hermes::Phone.new("us", "12345")
+      from.full_number.must_equal "12345"
+      from.short_code?.must_equal true
+
+      from = Hermes::Phone.new("af", "12345")
+      from.full_number.must_equal("+9312345")
+      from.short_code?.must_equal false
+    end
+
     it "handles a source and a special naming convention using [] and []=" do
       plivo_from = Hermes::Phone.new('us', '9193245341')
       twilio_from = Hermes::Phone.new('us', '9196022733')
