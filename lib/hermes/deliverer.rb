@@ -82,7 +82,7 @@ module Hermes
       }
 
       # then sum up all of the weights across our providers
-      providers.map(&:weight).inject(0, :+)
+      providers.count == 1 ? 1 : providers.map(&:weight).inject(0, :+)
     end
 
     def weighted_provider_for_type(type, filter: [])
@@ -98,6 +98,8 @@ module Hermes
         # or take everything if filter list is blank
         filter.empty? || filter.include?(provider_instance.class)
       }
+
+      return providers.first if providers.count == 1
 
       # if we end up with an empty list we're in trouble
       raise ProviderNotFoundError, "Empty provider list found for type:#{type} filter:#{filter}" unless providers.any?
