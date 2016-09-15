@@ -10,7 +10,7 @@ module Hermes
       end
     end
 
-    attr_reader :deliverer, :defaults, :credentials, :weight
+    attr_reader :deliverer, :defaults, :credentials
 
     def initialize(deliverer, options = {})
 
@@ -20,7 +20,7 @@ module Hermes
       @deliverer = deliverer
       @defaults = (options[:defaults] || {}).symbolize_keys
       @credentials = (options[:credentials] || {}).symbolize_keys
-      @weight = options[:weight].to_i
+      @weight = options[:weight]
 
       # required credentials should hard stop if they aren't being met
       if self.class._required_credentials.try(:any?)
@@ -49,6 +49,15 @@ module Hermes
         v.call
       else
         v
+      end
+    end
+
+    def weight
+      if @weight.is_a?(Fixnum)
+        @weight.to_i
+      elsif @weight.is_a?(Class)
+        @weight_determiner ||= @weight.new(common_name)
+        @weight_determiner.weight
       end
     end
 
